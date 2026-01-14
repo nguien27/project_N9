@@ -1,0 +1,23 @@
+{
+  "tong_so_file": 1228,
+  "label_counts": {
+    "Binh thuong": 105,
+    "Bat thuong": 231
+  },
+  "thong_ke_tuoi": {
+    "trung_binh": 50.455357142857146,
+    "median": 52.0,
+    "min": 12,
+    "max": 90,
+    "std": 19.180628470641537
+  },
+  "thong_ke_gioi_tinh": {
+    "M": 207,
+    "F": 129
+  },
+  "thong_ke_cat_file": {
+    "tong_so_file_goc": 336,
+    "tong_so_doan_cat": 1228,
+    "trung_binh_doan_tren_file": 3.6547619047619047
+  }
+}
