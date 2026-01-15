@@ -40,9 +40,6 @@ def chuan_hoa_audio(tin_hieu):
     gia_tri_max = np.max(np.abs(tin_hieu))
     return tin_hieu / gia_tri_max if gia_tri_max > 0 else tin_hieu
 
-def nang_cao_tan_so_cao(tin_hieu, he_so=0.97):
-    # Nhấn mạnh tần số cao: y[n] = x[n] - 0.97 * x[n-1]
-    return np.append(tin_hieu[0], tin_hieu[1:] - he_so * tin_hieu[:-1])
     
 def cat_khoang_lang(tin_hieu, nguong_db=20):
     do_dai_truoc = len(tin_hieu)
