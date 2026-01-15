@@ -28,7 +28,7 @@ def giam_nhieu_nhe(tin_hieu, tan_so):
 
 
 def loc_bang_thong(tin_hieu, tan_so, thap=TAN_SO_PHOI_THAP, cao=TAN_SO_PHOI_CAO):
-    """Chi giu dai tan so [thap, cao]."""
+     # Hàm lọc tần số trong khoảng phù hợp với âm thanh phổi
     nyquist = tan_so / 2
     thap_chuan = max(0.01, thap / nyquist)
     cao_chuan = min(0.99, cao / nyquist)
