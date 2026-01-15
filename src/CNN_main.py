@@ -2,6 +2,7 @@
 
 import os
 import sys
+import random
 import numpy as np
 import json
 from pathlib import Path
@@ -109,25 +110,73 @@ def main():
     # 2. Tai du lieu audio
     print("\n1. TAI DU LIEU AUDIO")
     print("="*50)
-    du_lieu_file, thong_ke_cat = tai_du_lieu_audio(THU_MUC_AUDIO, TAN_SO_MAU)
     
-    # 3. Chia du lieu
-    print("\n2. CHIA DU LIEU")
+    # Buoc 1: Lay danh sach tat ca file .wav tu thu muc
+    cac_file_wav = sorted([f for f in os.listdir(THU_MUC_AUDIO) if f.endswith('.wav')])
+    print(f'Tong so file: {len(cac_file_wav)}')
+    
+    # Buoc 2: Chia file thanh train/val 80/20
+    print("\n2. CHIA DU LIEU (THEO FILE)")
     print("="*50)
-    file_train, file_val = chia_du_lieu(du_lieu_file, ty_le_train=0.8, seed=SEED)
     
-    # 4. Chay EDA (phan tich du lieu)
+    # Phan loai file theo nhan
+    file_binh_thuong = sorted([f for f in cac_file_wav if f.split('_', 1)[1].split(',')[0].strip() == 'N'])
+    file_bat_thuong = sorted([f for f in cac_file_wav if f.split('_', 1)[1].split(',')[0].strip() != 'N'])
+    
+    print(f'Binh thuong: {len(file_binh_thuong)}, Bat thuong: {len(file_bat_thuong)}')
+    
+    # Xao tron va chia file
+    random.seed(SEED)
+    random.shuffle(file_binh_thuong)
+    random.shuffle(file_bat_thuong)
+    
+    # Chia tung loai file
+    n_train_0 = int(len(file_binh_thuong) * 0.8)
+    n_train_1 = int(len(file_bat_thuong) * 0.8)
+    
+    file_train_list = file_binh_thuong[:n_train_0] + file_bat_thuong[:n_train_1]
+    file_val_list = file_binh_thuong[n_train_0:] + file_bat_thuong[n_train_1:]
+    
+    random.shuffle(file_train_list)
+    random.shuffle(file_val_list)
+    
+    print(f'Train files: {len(file_train_list)} ({n_train_0} binh thuong + {n_train_1} bat thuong)')
+    print(f'Val files: {len(file_val_list)} ({len(file_binh_thuong)-n_train_0} binh thuong + {len(file_bat_thuong)-n_train_1} bat thuong)')
+    
+    # Buoc 3: Tai va cat file train
+    print('\nTai va cat file TRAIN...')
+    du_lieu_train, thong_ke_train = tai_du_lieu_audio(file_train_list, THU_MUC_AUDIO, TAN_SO_MAU)
+    
+    # Buoc 4: Tai va cat file val
+    print('\nTai va cat file VAL...')
+    du_lieu_val, thong_ke_val = tai_du_lieu_audio(file_val_list, THU_MUC_AUDIO, TAN_SO_MAU)
+    
+    # Gop du lieu train va val
+    du_lieu_file = {**du_lieu_train, **du_lieu_val}
+    
+    # Tao danh sach file segment cho chuan_bi_du_lieu
+    file_train = list(du_lieu_train.keys())
+    file_val = list(du_lieu_val.keys())
+    
+    # Thong ke tong hop
+    thong_ke_cat = {
+        'tong_so_file_goc': thong_ke_train['tong_so_file_goc'] + thong_ke_val['tong_so_file_goc'],
+        'tong_so_doan_cat': thong_ke_train['tong_so_doan_cat'] + thong_ke_val['tong_so_doan_cat'],
+        'chi_tiet_cat': thong_ke_train['chi_tiet_cat'] + thong_ke_val['chi_tiet_cat']
+    }
+    
+    # 3. Chay EDA (phan tich du lieu)
     print("\n3. PHAN TICH DU LIEU (EDA)")
     print("="*50)
-    chay_eda_day_du(du_lieu_file, THU_MUC_AUDIO, duong_dan_luu=str(EDA_RESULTS_PATH), thong_ke_cat=thong_ke_cat)
+    chay_eda_day_du(du_lieu_file, THU_MUC_AUDIO, TAN_SO_MAU, duong_dan_luu=str(EDA_RESULTS_PATH), thong_ke_cat=thong_ke_cat)
     
-    # 5. Chuan bi du lieu
+    # 4. Chuan bi du lieu
     print("\n4. CHUAN BI DU LIEU")
     print("="*50)
     X_train, y_train, X_val, y_val, _, _ = chuan_bi_du_lieu(du_lieu_file, file_train, file_val)
     
-    # 5.5 Oversample de can bang
-    print("\n4.5 OVERSAMPLE DE CAN BANG")
+    # 5. Oversample de can bang
+    print("\n5. OVERSAMPLE DE CAN BANG")
     print("="*50)
     from sklearn.utils import resample
     
@@ -152,18 +201,18 @@ def main():
     print(f'Sau oversample: {np.sum(y_train==0)} binh thuong, {np.sum(y_train==1)} bat thuong')
     
     # 6. Huan luyen mo hinh
-    print("\n5. HUAN LUYEN MO HINH")
+    print("\n6. HUAN LUYEN MO HINH")
     print("="*50)
     model, history = huan_luyen_mo_hinh(X_train, y_train, X_val, y_val, 
                                         duong_dan_luu=str(MODEL_PATH))
     
     # 7. Danh gia mo hinh
-    print("\n6. DANH GIA MO HINH")
+    print("\n7. DANH GIA MO HINH")
     print("="*50)
     results = danh_gia_mo_hinh(model, X_val, y_val)
     
     # 8. Ve bieu do
-    print("\n7. VE BIEU DO")
+    print("\n8. VE BIEU DO")
     print("="*50)
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     
@@ -178,12 +227,12 @@ def main():
     )
     
     # 9. Luu ket qua
-    print("\n8. LUU KET QUA")
+    print("\n9. LUU KET QUA")
     print("="*50)
     luu_ket_qua_json(results, str(EVALUATION_RESULTS_PATH))
     
     # 10. Trich xuat dac trung bang Grad-CAM
-    print("\n9. TRICH XUAT DAC TRUNG BANG GRAD-CAM")
+    print("\n10. TRICH XUAT DAC TRUNG BANG GRAD-CAM")
     print("="*50)
     try:
         gradcam_output_dir = 'project_N9/outputs/gradcam'
