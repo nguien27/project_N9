@@ -51,7 +51,7 @@ def chuan_bi_du_lieu(du_lieu_file, file_train, file_val):
     do_lech_train = mel_train_tam.std()
     print(f'Trung binh train: {trung_binh_train:.4f}, Do lech train: {do_lech_train:.4f}')
     
-    # BUOC 2: Tao tap train voi tang cuong (4 mau augment moi file)
+    # BUOC 2: Tao tap train voi tang cuong
     print('\nBuoc 2: Tao tap train (co tang cuong)...')
     X_train_mel = []
     y_train_mel = []
