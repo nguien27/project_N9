@@ -157,6 +157,7 @@ def main():
     # Tao danh sach file segment cho chuan_bi_du_lieu
     file_train = list(du_lieu_train.keys())
     file_val = list(du_lieu_val.keys())
+
     
     # Thong ke tong hop
     thong_ke_cat = {
